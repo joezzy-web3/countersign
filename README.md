@@ -6,8 +6,8 @@
 
 Anyone can copy a security team's name, logo and wording. Nobody can copy the wallet that signed a message. Countersign is a public scam-alert board where every alert is judged by its Arkiv `$creator` and traced to one root seal. An impersonator gets stamped **IMPOSTOR** in front of every reader. A leaked signing key gets revoked once, and every alert it ever made turns grey everywhere at the same moment. The board has no backend for reading: any browser, or one saved HTML file, can check it against the chain.
 
-- **Live app:** https://countersign-xyz.netlify.app (opens on a recorded Tiramisu scenario, then switches to the live chain)
-- **Standalone verifier:** `https://countersign-xyz.netlify.app/verify.html` (one file, zero dependencies)
+- **Live app:** `https://<your-site>.netlify.app` (opens on a recorded Tiramisu scenario, then switches to the live chain)
+- **Standalone verifier:** `https://<your-site>.netlify.app/verify.html` (one file, zero dependencies)
 - **Demo video (under 3 min):** `<link>`
 - **Tracks:** Security, Censorship Resistance
 - **Builder:** [@joezzyweb3](https://x.com/joezzyweb3) · [github.com/joezzy-web3](https://github.com/joezzy-web3)
