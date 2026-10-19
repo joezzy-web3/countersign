@@ -1,0 +1,29 @@
+{
+  "name": "countersign",
+  "version": "1.0.0",
+  "description": "Scam alerts on Arkiv, judged by $creator. No seal, no trust.",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22.10"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "keys": "node scripts/keys.mjs",
+    "fund": "node scripts/fund.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "seed": "node scripts/seed.mjs",
+    "revoke": "node scripts/revoke.mjs",
+    "renew": "node scripts/renew.mjs",
+    "replay": "node scripts/record-replay.mjs",
+    "build:verifier": "node scripts/build-verifier.mjs",
+    "dev": "npx --yes serve web -l 5173",
+    "friction": "node scripts/friction-table.mjs",
+    "proof": "node scripts/proof.mjs"
+  },
+  "dependencies": {
+    "@arkiv-network/sdk": "0.8.1",
+    "viem": "^2.38.2"
+  }
+}

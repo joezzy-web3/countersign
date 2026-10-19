@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Countersign</title>
+  <meta name="description" content="Scam alerts on Arkiv, judged by $creator. Anyone can copy a name. Nobody can copy a $creator." />
+  <meta name="theme-color" content="#0d0c0b" />
+  <link rel="icon" href="seal.svg" type="image/svg+xml" />
+  <link rel="preload" href="fonts/archivo.woff" as="font" type="font/woff" crossorigin />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="nav">
+    <nav class="links" id="navLinks" aria-label="Sections">
+      <a href="#check" data-spy="check"><i>01</i>Check a link</a>
+      <a href="#board" data-spy="board"><i>02</i>Board</a>
+      <a href="#how" data-spy="how"><i>03</i>How it works</a>
+      <a href="verify.html" class="ext">Verifier<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 16L16 8M9 8h7v7"/></svg></a>
+      <span class="ink" aria-hidden="true"></span>
+    </nav>
+    <a class="wordmark" href="#top" aria-label="Countersign home"><img src="seal.svg" alt="" width="22" height="22" /><span>COUNTERSIGN</span></a>
+    <div class="status">
+      <div class="seg" id="modeSeg" role="group" aria-label="Data source">
+        <span class="thumb" aria-hidden="true"></span>
+        <button id="modeReplay" class="on" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/></svg>Replay</button>
+        <button id="modeLive" type="button"><span class="live-dot"></span>Live</button>
+      </div>
+      <span id="blockPill" class="pill mono">block –</span>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO: the framed console -->
+    <section class="hero frame" aria-label="Countersign">
+      <div class="frame-bar mono">
+        <span><b class="led"></b>Arkiv · Tiramisu 7738577</span>
+        <span class="hide-sm">Security · Censorship resistance</span>
+        <span id="heroMode">Replay</span>
+      </div>
+
+      <div class="hero-grid">
+        <div class="stack" aria-label="Verdicts on the board">
+          <div class="stat s-imp"><label class="mono">Impostor</label><span id="nImpostor">0</span></div>
+          <div class="stat s-ver"><label class="mono">Verified</label><span id="nVerified">0</span></div>
+          <div class="stat s-rev"><label class="mono">Revoked</label><span id="nRevoked">0</span></div>
+          <div class="stat s-unv"><label class="mono">No seal</label><span id="nUnverified">0</span></div>
+        </div>
+
+        <div class="seal-stage">
+          <canvas id="seal3d" aria-hidden="true"></canvas>
+          <img id="sealFallback" src="seal.svg" alt="" hidden />
+          <div class="seal-caption mono"><span class="dot"></span><span id="sealCaption">Sealed: signer traced to the root</span></div>
+        </div>
+
+        <div class="pitch">
+          <h1>Anyone can copy a name. <span>Nobody can copy a <code>$creator</code>.</span></h1>
+          <p>Scam alerts on Arkiv, judged by the wallet that actually signed them and traced to one root seal. Fakes get stamped in front of every reader. A leaked key is revoked once, everywhere.</p>
+          <div class="cta">
+            <button id="attackBtn" class="btn danger" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/><path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4"/></svg><span>Launch impostor attack</span></button>
+            <a class="btn ghost" href="#check"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L11.6 6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.6-1.6"/></svg><span>Check a link</span><svg class="ic nudge" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="frame-foot mono">
+        <span>digest <b id="digestHero">–</b></span>
+        <span class="scroll"><i></i><i></i><i class="on"></i><i></i><i></i> Scroll</span>
+        <span id="eventsHero" class="hide-sm">events: idle</span>
+      </div>
+    </section>
+
+    <p id="notice" class="notice" hidden></p>
+
+    <!-- LINK CHECK -->
+    <section id="check" class="section">
+      <div class="section-head">
+        <span class="kicker mono"><i>01</i>Check a link</span>
+        <h2>Is this link safe? <span>Ask the chain, not a display name.</span></h2>
+      </div>
+      <form id="checkForm" class="checker" autocomplete="off">
+        <input id="checkInput" class="mono" type="text" inputmode="url" placeholder="paste a link or domain, e.g. claim-tiramisu-drop.example" aria-label="Link or domain to check" />
+        <button class="btn" type="submit"><span>Check</span><svg class="ic nudge" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+      </form>
+      <div id="checkSuggest" class="suggest mono"></div>
+      <div id="checkResult" class="result" hidden></div>
+    </section>
+
+    <!-- BOARD -->
+    <section id="board" class="section">
+      <div class="section-head row-between">
+        <div>
+          <span class="kicker mono"><i>02</i>The board</span>
+          <h2>Every alert, judged live. <span>Nothing to trust but the signature.</span></h2>
+        </div>
+        <div class="tabs" id="tabs" role="tablist" aria-label="Filter">
+          <span class="thumb" aria-hidden="true"></span>
+          <button class="tab on" data-filter="all" role="tab" type="button">All <b id="cAll">0</b></button>
+          <button class="tab" data-filter="verified" role="tab" type="button" title="The node filters by $creator"><span class="dot ver"></span>Verified <b id="cVer">0</b></button>
+          <button class="tab" data-filter="flagged" role="tab" type="button"><span class="dot imp"></span>Flagged <b id="cFlag">0</b></button>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div>
+          <ol id="feed" class="feed" aria-live="polite"></ol>
+          <p id="empty" class="empty" hidden>No alerts match this filter.</p>
+        </div>
+
+        <aside>
+          <div class="panel digest-card">
+            <div class="panel-head"><h3>Threat digest</h3><span id="digestBadge" class="badge mono">Replay</span></div>
+            <div class="mini mono">
+              <div><b id="dBlock">–</b><small>block</small></div>
+              <div><b id="dImp" class="t-imp">0</b><small>impostor</small></div>
+              <div><b id="dVer" class="t-ver">0</b><small>verified</small></div>
+              <div><b id="dRev" class="t-rev">0</b><small>revoked</small></div>
+            </div>
+            <ol id="ticker" class="ticker"></ol>
+            <div class="digest mono">sha-256 <span id="digest">–</span></div>
+            <p id="eventsMode" class="small muted">Events: idle</p>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><h3>Root of trust</h3><span class="badge mono">1 address</span></div>
+            <p class="small muted">The only hard-coded decision. Every seal below is a <code>grant</code> entity this address created.</p>
+            <div class="mono small root" id="rootAddr">–</div>
+            <ul id="seals" class="seals"></ul>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><h3>Verify without us</h3><span class="badge mono">0 deps</span></div>
+            <p class="small muted">No backend reads for this page. Save <a href="verify.html">verify.html</a>, point it at any Arkiv RPC, and you get the same verdicts and the same digest.</p>
+            <details><summary class="small">The exact queries</summary><pre id="queries" class="mono small"></pre></details>
+            <details><summary class="small">Read it from a terminal</summary><pre id="curlSnippet" class="mono small"></pre><button id="copyCurl" class="btn small ghost" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg><span>Copy</span></button></details>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" class="section">
+      <div class="section-head">
+        <span class="kicker mono"><i>03</i>How it works</span>
+        <h2>Four moves. <span>One source of truth.</span></h2>
+      </div>
+      <ol class="steps">
+        <li>
+          <svg viewBox="0 0 120 92" aria-hidden="true"><g class="iso"><path d="M60 14l40 20-40 20-40-20z"/><path d="M20 34v10l40 20 40-20V34"/><path d="M60 54v10"/><path d="M60 26l26 13M47 33l26 13" class="hl"/><path d="M60 2l40 20-40 20-40-20z" class="ghost"/></g></svg>
+          <span class="mono step-n"><i>01</i>Issue</span>
+          <h3>A signer posts an alert</h3>
+          <p>Readonly, so a signature always covers the exact bytes. It lives 7 days unless someone confirms it.</p>
+        </li>
+        <li>
+          <svg viewBox="0 0 120 92" aria-hidden="true"><g class="iso"><ellipse cx="46" cy="50" rx="26" ry="13"/><path d="M20 50v8c0 7 12 13 26 13s26-6 26-13v-8"/><ellipse cx="76" cy="38" rx="26" ry="13" class="hl"/><path d="M50 38v8c0 7 12 13 26 13s26-6 26-13v-8" class="hl"/><path d="M68 38l6 4 10-8" class="hl"/></g></svg>
+          <span class="mono step-n"><i>02</i>Countersign</span>
+          <h3>Another signer confirms it</h3>
+          <p>One atomic batch writes the cosign and renews the alert's 7-day lease. Never one without the other.</p>
+        </li>
+        <li>
+          <svg viewBox="0 0 120 92" aria-hidden="true"><g class="iso"><path d="M60 30l40 20-40 20-40-20z"/><path d="M20 50v8l40 20 40-20v-8"/><circle cx="64" cy="30" r="15" class="hl"/><path d="M75 41l12 12" class="hl"/><path d="M58 30l5 4 8-8" class="hl"/></g></svg>
+          <span class="mono step-n"><i>03</i>Verify</span>
+          <h3>Every reader checks $creator</h3>
+          <p>Trust is traced from the signature back to the root, in your browser or in one saved HTML file.</p>
+        </li>
+        <li>
+          <svg viewBox="0 0 120 92" aria-hidden="true"><g class="iso"><path d="M24 40l30-15 8 22-30 15z"/><path d="M66 22l30 15-30 15-8-22z" class="hl"/><path d="M24 40v10l8 12M96 37v10L66 62" /><path d="M58 30l6 6-5 5 6 7" class="hl"/></g></svg>
+          <span class="mono step-n"><i>04</i>Revoke</span>
+          <h3>The root cancels a leaked seal</h3>
+          <p>One revoke entity, and every alert that key ever signed turns grey for every viewer at once.</p>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="foot mono">
+    <span>Tiramisu testnet · chain 7738577 · synthetic demo data</span>
+    <span><a href="verify.html">Standalone verifier</a> <a href="https://github.com/joezzy-web3/countersign" id="repoLink">Source · MIT</a></span>
+  </footer>
+
+  <template id="cardTpl">
+    <li class="card">
+      <div class="stamp" aria-hidden="true"><span></span></div>
+      <div class="body">
+        <div class="meta mono"><span class="kind"></span><span class="sev"></span><span class="target"></span></div>
+        <h3 class="title"></h3>
+        <p class="summary"></p>
+        <div class="who">
+          <div><label class="mono">claims</label><span class="claims"></span></div>
+          <div><label class="mono">signed by · $creator</label><a class="creator mono" target="_blank" rel="noopener"></a></div>
+        </div>
+        <ol class="path" aria-label="Trust path"></ol>
+        <p class="reason"></p>
+        <div class="cosigns"></div>
+        <div class="lease"><div class="bar"><i></i></div><span class="leaseText mono"></span></div>
+        <div class="row">
+          <button class="btn small cosignBtn" type="button" hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.2 1.7 2.8-.3 1.2 2.6 2.6 1.2-.3 2.8 1.7 2.2-1.7 2.2.3 2.8-2.6 1.2-1.2 2.6-2.8-.3L12 21.5l-2.2-1.7-2.8.3-1.2-2.6-2.6-1.2.3-2.8L1.8 11.3l1.7-2.2-.3-2.8 2.6-1.2L7 2.5l2.8.3z"/><path d="M8.5 12l2.4 2.4 4.8-5"/></svg><span>Countersign</span></button>
+          <button class="btn small ghost inspectBtn" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 7L3.5 12l5 5M15.5 7l5 5-5 5"/></svg><span>Inspect entity</span></button>
+        </div>
+        <pre class="raw mono small" hidden></pre>
+      </div>
+    </li>
+  </template>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

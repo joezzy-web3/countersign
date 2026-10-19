@@ -1,0 +1,146 @@
+{
+  "ranAt": "2026-10-19T18:02:09.755Z",
+  "rpc": "https://rpc.tiramisu.db-chain.testnet.arkiv.network",
+  "versions": {
+    "sdk": "0.8.1",
+    "viem": "2.57.7",
+    "node": "v22.23.3",
+    "os": "linux x64"
+  },
+  "results": [
+    {
+      "step": "chain id is Tiramisu 7738577",
+      "ok": true,
+      "ms": 4041,
+      "expected": 7738577,
+      "actual": 7738577
+    },
+    {
+      "step": "raw eth_blockNumber over fetch (the path the browser uses)",
+      "ok": true,
+      "ms": 980,
+      "expected": "a block number",
+      "actual": 791558
+    },
+    {
+      "step": "one arkiv_query: record the node's Arkiv-Cost and RateLimit headers",
+      "ok": true,
+      "ms": 1515,
+      "expected": "headers present or absent, recorded as-is",
+      "actual": {
+        "status": 200,
+        "arkivCost": "100",
+        "ratelimit": "limit=600, remaining=589, reset=4",
+        "retryAfter": null
+      }
+    },
+    {
+      "step": "createEntity (readonly, 15 min)",
+      "ok": true,
+      "ms": 11077,
+      "expected": "entityKey + txHash",
+      "actual": {
+        "entityKey": "0xe854e0ea503b1d215309d952a964e0362ffd6b9e6ba7fcd2e7700ca46da59572",
+        "txHash": "0x0daa2e189381f9e2d5a883d68f28985badb980f25240043a6b6cb8cf7386d7cd"
+      }
+    },
+    {
+      "step": "getEntity returns $creator = signer",
+      "ok": true,
+      "ms": 590,
+      "expected": "0xd5DaE49f8f9f78FB0465afC4B4207c67dba3Ac97",
+      "actual": "0xd5DaE49f8f9f78FB0465afC4B4207c67dba3Ac97"
+    },
+    {
+      "step": "raw arkiv_query sees the same entity and creator",
+      "ok": true,
+      "ms": 534,
+      "expected": "0xd5dae49f8f9f78fb0465afc4b4207c67dba3ac97",
+      "actual": "0xd5dae49f8f9f78fb0465afc4b4207c67dba3ac97"
+    },
+    {
+      "step": "SDK select().where().createdBy() finds it",
+      "ok": true,
+      "ms": 615,
+      "expected": "1+ entities",
+      "actual": "1 entities"
+    },
+    {
+      "step": "patching a readonly entity is refused",
+      "ok": true,
+      "ms": 1077,
+      "expected": "revert",
+      "actual": "rejected: EntityMutationError | Transaction failed: entity 0xe854e0ea\u2026a59572 was created readonly, so its contents can never change. Its expiry can still be extended, and it can be transferred or deleted | The contract function \"execute\" reverted."
+    },
+    {
+      "step": "another wallet cannot extend a non-permissionless entity",
+      "ok": true,
+      "ms": 1796,
+      "expected": "revert",
+      "actual": "rejected: EntityMutationError | Transaction failed: entity 0xe854e0ea\u2026a59572 is owned by 0xd5DaE49f8f9f78FB0465afC4B4207c67dba3Ac97, not 0x001f7b52B26e563B0c3A4d909fFf7D8c6b6aa698 | The contract function \"execute\" reverted."
+    },
+    {
+      "step": "extending to an earlier expiry is refused (no silent shortening)",
+      "ok": true,
+      "ms": 1530,
+      "expected": "revert",
+      "actual": "rejected: EntityMutationError | Transaction failed: entity 0xe854e0ea\u2026a59572 already expires at block 792013, so extending it to 791627 would shorten its life | The contract function \"execute\" reverted."
+    },
+    {
+      "step": "createEntity with permissionlessExtension",
+      "ok": true,
+      "ms": 9727,
+      "expected": "entityKey",
+      "actual": {
+        "entityKey": "0xd0a4a182ea66ae86fca6fd45716198e8e597f788e19bbc7a327b081d87c031d2",
+        "txHash": "0x31bdab1e67a1be8661c3e4eb36cddf3d64e57021a89e2563aa3f883bbee3933f"
+      }
+    },
+    {
+      "step": "a different wallet CAN extend a permissionless entity",
+      "ok": true,
+      "ms": 5209,
+      "expected": "new expiresAt",
+      "actual": {
+        "txHash": "0xf4cc253ecce2c2ff2b60746d49836f18a4176650a520235238505568dadde6e6",
+        "expiresAt": "792475"
+      }
+    },
+    {
+      "step": "executeBatch: create + extend land in one transaction",
+      "ok": true,
+      "ms": 4788,
+      "expected": "one txHash, 1 created, 1 extended",
+      "actual": {
+        "txHash": "0x592dbc1c9ba89fb907bff0e0821c857ee38cc8ffba2eab1caea282078e33e7fa",
+        "created": 1,
+        "extended": 1
+      }
+    },
+    {
+      "step": "an uppercase attribute name is refused",
+      "ok": true,
+      "ms": 1399,
+      "expected": "rejected (SDK or node)",
+      "actual": "rejected: EntityMutationError | Transaction failed: an attribute name holds \"S\" (0x53) at byte 0, which is outside the name charset (\"A\"-\"Z\", \"a\"-\"z\", \"0\"-\"9\", \".\", \"-\" and \"_\", with a letter first) | The contract function \"execute\" reverted."
+    },
+    {
+      "step": "attribute values over 128 bytes are refused client-side",
+      "ok": true,
+      "ms": 1,
+      "expected": "InvalidValueError",
+      "actual": "rejected: InvalidValueError: Invalid str value \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx...\": 129 UTF-8 bytes exceeds the 128-byte limit on a str. Store the long form in the entity payload and keep a short, q"
+    },
+    {
+      "step": "watchEntityEvents over WebSocket sees our create (no fromBlock)",
+      "ok": true,
+      "ms": 7230,
+      "expected": "EntityCreated within 30 s",
+      "actual": {
+        "entityKey": "0x9985f8a96712f69b1d9e45b81e028e40c2d135ad87fc1de8e70df067a4b874ca",
+        "eventBlock": "791580",
+        "msFromSend": 7228
+      }
+    }
+  ]
+}

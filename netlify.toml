@@ -1,0 +1,31 @@
+[build]
+  publish = "web"
+  command = "npm test"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  # Ship the SDK as a normal node_modules dependency instead of bundling it:
+  # it lazy-imports brotli-wasm (a .wasm file), which esbuild should not try to inline.
+  external_node_modules = ["@arkiv-network/sdk", "brotli-wasm"]
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://esm.sh; connect-src 'self' https://rpc.tiramisu.db-chain.testnet.arkiv.network wss://rpc.tiramisu.db-chain.testnet.arkiv.network https://esm.sh; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; frame-ancestors 'none'"
+
+[[headers]]
+  for = "/verify.html"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src https: wss:; frame-ancestors 'none'"
+
+# Fallback only: if a browser cannot reach the Arkiv RPC directly (for example CORS),
+# the board retries through this pass-through. It is a dumb proxy, not a backend: same queries,
+# same answers, and verify.html never uses it.
+[[redirects]]
+  from = "/rpc"
+  to = "https://rpc.tiramisu.db-chain.testnet.arkiv.network"
+  status = 200
+  force = true

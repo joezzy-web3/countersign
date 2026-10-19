@@ -1,0 +1,76 @@
+[
+  {
+    "at": "2026-10-19T18:03:07.902Z",
+    "what": "charter: root grants seals (one batch)",
+    "wallet": "root",
+    "txHash": "0xf83113ee5efecb759d8b2994e50682808668bdaa0ad165294982ddfa76bd7894",
+    "entityKeys": [
+      "0x6594ab874bb82fcfb4b9449241e874a5156d93599180dcb3e26d9b3cb5019f5b",
+      "0x137e30e3151e1d2e994bb06811caffd552e8328f4c4de95a8ca150a9fabac10f",
+      "0x7ff6792f88bb621e29ecfc44f99abbdfcd6da28be333ddd47fb88dba25ffc1de"
+    ]
+  },
+  {
+    "at": "2026-10-19T18:03:12.333Z",
+    "what": "alert by sentinel: Fake airdrop claim page drains wallets",
+    "wallet": "sentinel",
+    "txHash": "0x58d9a435e0f968ac646eb5cc14a1cc8a00ba36fef98d224888816cfafc2b61a4",
+    "entityKeys": [
+      "0x32edbfeffd72b7561f921666b262cf958e13c1cf86978e5b5d86c007b55a37f9"
+    ]
+  },
+  {
+    "at": "2026-10-19T18:03:23.739Z",
+    "what": "alert by watchtower: Fake support desk asks for seed phrases",
+    "wallet": "watchtower",
+    "txHash": "0x8588604736d0ba3b963c03723eff58f6ea5cc8b2db4ab93ac4946d93f205357a",
+    "entityKeys": [
+      "0x7ea0c8121d6ae443da7fa183b646e0caeffef7a362dc89f79fb82ee1bb250e4b"
+    ]
+  },
+  {
+    "at": "2026-10-19T18:03:30.662Z",
+    "what": "alert by compromised: Bridge maintenance window",
+    "wallet": "compromised",
+    "txHash": "0x311a8c8b5a9c4c7cb12183019a3b8a31b5251a452246aad1854b61d8fb213a5c",
+    "entityKeys": [
+      "0x50d1542ce7914cca0863aab8d21db65139b7f93b4af3255cd1d624562aea67c0"
+    ]
+  },
+  {
+    "at": "2026-10-19T18:03:38.733Z",
+    "what": "alert by impostor: URGENT: migrate your tokens now",
+    "wallet": "impostor",
+    "txHash": "0x9c389c8d77d2230e062606454adb0ee793aa8dd54f407227566bd9ffbac0071a",
+    "entityKeys": [
+      "0x05194cd557ce54f34eae0765c34a4dc325e96fdad1256d9577a75d120e6c05cb"
+    ]
+  },
+  {
+    "at": "2026-10-19T18:03:45.921Z",
+    "what": "cosign by watchtower on sentinel's alert (cosign + renewal, one batch)",
+    "wallet": "watchtower",
+    "txHash": "0x22359e88a288bbd9a9cc88823f7685cf54d1f612a488f7fff15079fbc4bb0805",
+    "entityKeys": [
+      "0xa7340c9830a40a9fb9893d057c59ce2b97ba7d6ebc0232ec9326055114ef40c5"
+    ]
+  },
+  {
+    "at": "2026-10-19T18:03:52.408Z",
+    "what": "cosign by sentinel on watchtower's alert (cosign + renewal, one batch)",
+    "wallet": "sentinel",
+    "txHash": "0x47b5ebe6fb03d57a582ba1c3bb9cb3aa8ce892f466da78c0de2496790c500c92",
+    "entityKeys": [
+      "0x3f991b32f4af76e8ed9ca8b78abaae77208aa6ee381c9942c7d5a3803ac9aa41"
+    ]
+  },
+  {
+    "at": "2026-10-19T18:03:59.154Z",
+    "what": "cosign by impostor on impostor's alert (cosign + renewal, one batch)",
+    "wallet": "impostor",
+    "txHash": "0x63f6530c2b34d9bbe6e66e00eea90b0b6cd9552554298699127c7838ca78643b",
+    "entityKeys": [
+      "0x7197efe28412f400ff3a3bdd51882fda6f1b24df3e3bdc890351451c1cad96f8"
+    ]
+  }
+]

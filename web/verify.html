@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Countersign Verifier</title>
+<meta name="description" content="Standalone verifier: reads Arkiv directly and recomputes every Countersign verdict. Save this file and it keeps working without countersign's servers." />
+<style>
+  :root { --bg:#fbf8f3; --ink:#1d1a16; --muted:#6b6258; --line:#e2d9cc; --ver:#1f7a5c; --imp:#b4232a; --rev:#6f6a64; --unv:#9a6a12; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14120f; --ink:#f1e9dd; --muted:#a39685; --line:#3a332c; --ver:#4cc79c; --imp:#ff6b62; --rev:#b9b2a9; --unv:#e7b04b; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 20px 16px 40px; }
+  h1 { font: 700 26px/1.2 Georgia, serif; margin: 6px 0; }
+  p { color: var(--muted); }
+  label { display:block; font-size:12px; color:var(--muted); margin-top:8px; }
+  input { width:100%; font:13px ui-monospace, monospace; padding:8px; border:1px solid var(--line); border-radius:8px; background:transparent; color:var(--ink); }
+  button { margin-top:10px; font:600 14px system-ui; padding:9px 16px; border-radius:8px; border:1px solid var(--ink); background:var(--ink); color:var(--bg); cursor:pointer; }
+  .mono { font-family: ui-monospace, monospace; font-size: 12.5px; word-break: break-all; }
+  table { width:100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align: top; }
+  .s { font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:.08em; }
+  .verified { color: var(--ver); } .impostor { color: var(--imp); } .revoked { color: var(--rev); } .unverified { color: var(--unv); }
+  pre { white-space: pre-wrap; word-break: break-all; font-size:12px; color: var(--muted); }
+  .box { border:1px solid var(--line); border-radius:10px; padding:12px; margin-top:14px; }
+  .scroll { overflow-x:auto; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Countersign Verifier</h1>
+  <p>One file, zero dependencies. It reads Arkiv over raw JSON-RPC and recomputes every verdict with the
+  same rules the board uses. Save it to your disk: it keeps working if countersign's website disappears.</p>
+  <label for="rpc">Arkiv RPC (any node serving Tiramisu)</label>
+  <input id="rpc" value="https://rpc.tiramisu.db-chain.testnet.arkiv.network" />
+  <label for="root">Root of trust (the one address you choose to trust)</label>
+  <input id="root" value="0xa35b4CF284cf5FF87912a5Eeb533CB3bF52778C7" />
+  <button id="go" type="button">Verify now</button>
+  <div id="out"></div>
+</main>
+<script type="module">
+// ---- inlined from web/core/rpc.js ----
+// Minimal Arkiv reader over raw JSON-RPC (`arkiv_query`). No dependencies.
+//
+// This is deliberate: anyone can read and verify the board with nothing but this file, a browser
+// and any Arkiv RPC URL. No Countersign backend is involved in reading.
+//
+// Wire format follows @arkiv-network/sdk 0.8.x (src/types/rpcSchema.ts, src/query/expression.ts).
+
+const APP = "countersign";
+
+/** Query-language literals, written tagged exactly as the SDK's render() does. */
+const lit = {
+  str: (v) => `str('${String(v).replaceAll("'", "''")}')`,
+  addr: (v) => `addr(${String(v).toLowerCase()})`,
+  key: (v) => `key(${String(v).toLowerCase()})`,
+  u64: (v) => `u64(${BigInt(v).toString()})`,
+};
+
+/** The queries the app runs. Kept in one place so schema.md can quote them exactly. */
+const Q = {
+  /** The one query a board view runs: every Countersign entity, all types, in one walk. */
+  all: () => `app = ${lit.str(APP)}`,
+  grants: (root) =>
+    `app = ${lit.str(APP)} AND type = ${lit.str("grant")} AND $creator = ${lit.addr(root)}`,
+  revokes: (root) =>
+    `app = ${lit.str(APP)} AND type = ${lit.str("revoke")} AND $creator = ${lit.addr(root)}`,
+  alerts: (minSeverity = 1) =>
+    `app = ${lit.str(APP)} AND type = ${lit.str("alert")} AND severity >= ${lit.u64(minSeverity)}`,
+  /** Server-side "verified only": alerts whose $creator is one of the given seals. */
+  alertsBy: (creators, minSeverity = 1) =>
+    `app = ${lit.str(APP)} AND type = ${lit.str("alert")} AND severity >= ${lit.u64(minSeverity)} AND (` +
+    creators.map((c) => `$creator = ${lit.addr(c)}`).join(" OR ") +
+    `)`,
+  /** Link check: alerts about one exact host. */
+  target: (host) => `app = ${lit.str(APP)} AND type = ${lit.str("alert")} AND target = ${lit.str(host)}`,
+  cosigns: () => `app = ${lit.str(APP)} AND type = ${lit.str("cosign")}`,
+  cosignsFor: (alertKey) =>
+    `app = ${lit.str(APP)} AND type = ${lit.str("cosign")} AND alert = ${lit.key(alertKey)}`,
+};
+
+const SELECT_ALL = {
+  key: true,
+  owner: true,
+  creator: true,
+  createdAt: true,
+  expiresAt: true,
+  creationFlags: true,
+  contentType: true,
+  payload: true,
+  attributes: true,
+};
+
+let rpcId = 1;
+
+/** Last cost/limit headers the node sent (public RPC meters arkiv_query per connection). */
+const meter = { cost: 0, queries: 0, ratelimit: "" };
+
+async function rpc(url, method, params, { signal, headers = {} } = {}) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json", ...headers },
+    body: JSON.stringify({ jsonrpc: "2.0", id: rpcId++, method, params }),
+    signal,
+  });
+  const cost = Number(res.headers?.get?.("arkiv-cost") ?? 0);
+  if (method === "arkiv_query") meter.queries += 1;
+  if (cost) meter.cost += cost;
+  meter.ratelimit = res.headers?.get?.("ratelimit") ?? meter.ratelimit;
+  if (res.status === 429) {
+    const wait = Number(res.headers?.get?.("retry-after") ?? 0);
+    const e = new Error(
+      `Arkiv's public RPC query budget for this connection is used up` +
+        (wait ? `; it resets in about ${Math.ceil(wait / 60)} min` : "") +
+        ". The recording and the standalone verifier still work.",
+    );
+    e.code = 429;
+    e.retryAfter = wait;
+    throw e;
+  }
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`RPC HTTP ${res.status} ${res.statusText} for ${method}: ${text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160)}`);
+  }
+  const body = await res.json();
+  if (body.error) {
+    const e = new Error(`RPC ${method} error ${body.error.code}: ${body.error.message}`);
+    e.code = body.error.code;
+    e.data = body.error.data;
+    throw e;
+  }
+  return body.result;
+}
+
+const hexToNumberSafe = (h) => {
+  const b = BigInt(h);
+  return b > BigInt(Number.MAX_SAFE_INTEGER) ? Infinity : Number(b);
+};
+
+function decodeAttr({ type, value }) {
+  switch (type) {
+    case "u64":
+    case "u256":
+      return typeof value === "string" ? hexToNumberSafe(value) : Number(value);
+    case "i32":
+      return Number(value);
+    case "addr":
+    case "key":
+    case "bytes32":
+      return String(value).toLowerCase();
+    case "bool":
+      return Boolean(value);
+    default:
+      return value; // str, dec (decimal string)
+  }
+}
+
+function hexToBytes(hex) {
+  const h = hex.startsWith("0x") ? hex.slice(2) : hex;
+  const out = new Uint8Array(h.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(h.substr(i * 2, 2), 16);
+  return out;
+}
+
+/** Turns one RPC entity into the plain record shape the trust engine reads. */
+function normalizeEntity(e) {
+  const attrs = {};
+  for (const a of e.attributes ?? []) attrs[a.name] = decodeAttr(a);
+  let payload = null;
+  if (e.payload && e.payload !== "0x") {
+    try {
+      payload = JSON.parse(new TextDecoder().decode(hexToBytes(e.payload)));
+    } catch {
+      payload = null; // not JSON: treated as no payload. Payloads are data, never instructions.
+    }
+  }
+  const flagsRaw = typeof e.creationFlags === "number" ? e.creationFlags : e.creationFlags?.raw ?? 0;
+  return {
+    key: String(e.key ?? "").toLowerCase(),
+    creator: String(e.creator ?? "").toLowerCase(),
+    owner: String(e.owner ?? "").toLowerCase(),
+    createdAt: e.createdAt ? hexToNumberSafe(e.createdAt) : 0,
+    expiresAt: e.expiresAt ? hexToNumberSafe(e.expiresAt) : 0,
+    flags: { readonly: Boolean(flagsRaw & 1), permissionlessExtension: Boolean(flagsRaw & 2) },
+    contentType: e.contentType ?? "",
+    attrs,
+    payload,
+  };
+}
+
+/**
+ * Runs a query and walks every page with the cursor, all at one block so the pages agree.
+ * Page size 200 is the node maximum (SDK MAX_LIMIT).
+ */
+async function queryAll(url, query, { atBlock, maxPages = 25, select = SELECT_ALL, headers } = {}) {
+  const out = [];
+  let cursor;
+  for (let page = 0; page < maxPages; page++) {
+    const opts = { select, limit: "0xc8" };
+    if (atBlock !== undefined) opts.atBlock = "0x" + BigInt(atBlock).toString(16);
+    if (cursor) opts.cursor = cursor;
+    const result = await rpc(url, "arkiv_query", [query, opts], { headers });
+    for (const e of result.data ?? []) out.push(normalizeEntity(e));
+    cursor = result.cursor;
+    if (!cursor) return { entities: out, pages: page + 1, blockNumber: hexToNumberSafe(result.blockNumber) };
+  }
+  throw new Error(`Query still had more pages after ${maxPages}; refusing to show a partial board.`);
+}
+
+/**
+ * Reads everything the board needs with ONE arkiv_query (pinned to one block, cursor-walked), then
+ * splits it by type locally. The public RPC meters each query per connection, so one query per
+ * view instead of four is the difference between a demo that survives judging and one that 429s.
+ *
+ * Trust is not decided here: grants and revokes are kept whoever wrote them, and the engine only
+ * honours those whose $creator is the root.
+ */
+async function loadSnapshot(url, root, { headers } = {}) {
+  const head = hexToNumberSafe(await rpc(url, "eth_blockNumber", [], { headers }));
+  const r = await queryAll(url, Q.all(), { atBlock: head, headers });
+  const of = (t) => r.entities.filter((e) => e.attrs.type === t);
+  return {
+    head,
+    grants: of("grant"),
+    revokes: of("revoke"),
+    alerts: of("alert"),
+    cosigns: of("cosign"),
+    queries: { "board (one query, split by type locally)": Q.all() },
+  };
+}
+
+// ---- inlined from web/core/verdict.js ----
+// Countersign trust engine.
+//
+// Pure, deterministic, dependency-free. Same input snapshot -> same verdicts -> same digest.
+// The web app, the standalone verifier (web/verify.html) and the tests all run this logic,
+// so anyone can check that a verdict follows from on-chain data alone.
+//
+// The one rule: trust comes from $creator (set by the chain from the transaction signature),
+// never from an attribute or payload field, because anyone can write those.
+
+const STATUS = Object.freeze({
+  VERIFIED: "verified",
+  IMPOSTOR: "impostor",
+  REVOKED: "revoked",
+  UNVERIFIED: "unverified",
+});
+
+/** Independent seals needed before an alert counts as confirmed. */
+const QUORUM = 2;
+
+const lc = (a) => (typeof a === "string" ? a.toLowerCase() : "");
+
+/**
+ * Builds the trust table from grants and revokes.
+ *
+ * A grant or revoke only counts if its $creator is the root. For each signer the most recent
+ * root decision (by creation block) wins, so a root can revoke and later re-grant.
+ *
+ * @param {object} snapshot { head, grants[], revokes[] }
+ * @param {string} root root address
+ */
+function buildTrust(snapshot, root) {
+  const rootLc = lc(root);
+  const head = Number(snapshot.head);
+  /** @type {Map<string, any>} signer address -> latest decision */
+  const decisions = new Map();
+
+  const consider = (record, kind) => {
+    if (lc(record.creator) !== rootLc) return; // forged grant/revoke from a non-root wallet: ignored
+    const signer = lc(record.attrs?.signer);
+    if (!/^0x[0-9a-f]{40}$/.test(signer)) return;
+    const prev = decisions.get(signer);
+    const at = Number(record.createdAt ?? 0);
+    // Tie on the same block: a revoke beats a grant (fail closed).
+    if (!prev || at > prev.at || (at === prev.at && kind === "revoke")) {
+      decisions.set(signer, { kind, at, record });
+    }
+  };
+  for (const g of snapshot.grants ?? []) consider(g, "grant");
+  for (const r of snapshot.revokes ?? []) consider(r, "revoke");
+
+  /** @type {Map<string, any>} */
+  const signers = new Map();
+  /** label -> signer address, for every label the root ever granted (live, lapsed or revoked) */
+  const labels = new Map();
+
+  for (const g of snapshot.grants ?? []) {
+    if (lc(g.creator) !== rootLc) continue;
+    const label = String(g.attrs?.label ?? "").trim().toLowerCase();
+    if (label) labels.set(label, lc(g.attrs?.signer));
+  }
+
+  for (const [signer, d] of decisions) {
+    if (d.kind === "revoke") {
+      // Keep the label the signer held before revocation, so the UI can say whose seal it was.
+      const label = [...labels.entries()].find(([, a]) => a === signer)?.[0] ?? "";
+      signers.set(signer, { state: "revoked", label, revokeKey: d.record.key, revokedAt: d.at });
+      continue;
+    }
+    const live = Number(d.record.expiresAt) > head;
+    signers.set(signer, {
+      state: live ? "active" : "lapsed",
+      label: String(d.record.attrs?.label ?? "").trim().toLowerCase(),
+      grantKey: d.record.key,
+      expiresAt: Number(d.record.expiresAt),
+    });
+  }
+  return { root: rootLc, head, signers, labels };
+}
+
+/**
+ * Judges one alert against the trust table.
+ * @returns {{status: string, issuer: string, reason: string}}
+ */
+function judgeAlert(alert, trust) {
+  const creator = lc(alert.creator);
+  const claims = String(alert.attrs?.claims ?? "").trim().toLowerCase();
+  const short = (a) => (a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "?");
+
+  if (creator === trust.root) {
+    return { status: STATUS.VERIFIED, issuer: "root", reason: "Signed by the root seal." };
+  }
+  const s = trust.signers.get(creator);
+  if (s?.state === "revoked") {
+    return {
+      status: STATUS.REVOKED,
+      issuer: s.label || short(creator),
+      reason: `Signer ${short(creator)} was revoked by the root at block ${s.revokedAt}. Its seals no longer count.`,
+    };
+  }
+  if (s?.state === "active") {
+    return {
+      status: STATUS.VERIFIED,
+      issuer: s.label,
+      reason: `Signed by ${s.label} (${short(creator)}), granted by the root until block ${s.expiresAt}.`,
+    };
+  }
+  // Impostor: claims a label the root granted to a *different* wallet.
+  if (claims && trust.labels.has(claims) && trust.labels.get(claims) !== creator) {
+    const real = trust.labels.get(claims);
+    return {
+      status: STATUS.IMPOSTOR,
+      issuer: claims,
+      reason: `Claims to be ${claims}, but was signed by ${short(creator)}. ${claims}'s seal is ${short(real)}.`,
+    };
+  }
+  if (s?.state === "lapsed") {
+    return {
+      status: STATUS.UNVERIFIED,
+      issuer: s.label || short(creator),
+      reason: `Signer ${short(creator)}'s grant expired at block ${s.expiresAt} and was not renewed.`,
+    };
+  }
+  return {
+    status: STATUS.UNVERIFIED,
+    issuer: short(creator),
+    reason: `Signed by ${short(creator)}, which holds no seal from the root.`,
+  };
+}
+
+/**
+ * Judges the whole board. Cosigns only count when the cosigner holds an active seal and is not
+ * the alert's own author; one count per cosigner.
+ */
+function judgeBoard(snapshot, root) {
+  const trust = buildTrust(snapshot, root);
+  const cosignsByAlert = new Map();
+  for (const c of snapshot.cosigns ?? []) {
+    const target = lc(c.attrs?.alert);
+    if (!target) continue;
+    if (!cosignsByAlert.has(target)) cosignsByAlert.set(target, []);
+    cosignsByAlert.get(target).push(c);
+  }
+
+  const alerts = (snapshot.alerts ?? []).map((a) => {
+    const verdict = judgeAlert(a, trust);
+    const seen = new Set();
+    const cosigners = [];
+    let ignored = 0;
+    for (const c of cosignsByAlert.get(lc(a.key)) ?? []) {
+      const who = lc(c.creator);
+      const s = trust.signers.get(who);
+      const counts =
+        (s?.state === "active" || who === trust.root) && who !== lc(a.creator) && !seen.has(who);
+      if (counts) {
+        seen.add(who);
+        cosigners.push({ address: who, label: who === trust.root ? "root" : s.label, key: c.key });
+      } else {
+        ignored += 1;
+      }
+    }
+    // Quorum: the author's seal plus independent countersigns. One leaked signer key can post a
+    // sealed alert, but it cannot reach a quorum of 2 on its own.
+    const seals = verdict.status === STATUS.VERIFIED ? 1 + cosigners.length : 0;
+    return { ...a, verdict, cosigners, ignoredCosigns: ignored, seals, confirmed: seals >= QUORUM };
+  });
+
+  alerts.sort(
+    (x, y) =>
+      Number(y.attrs?.issued_ms ?? 0) - Number(x.attrs?.issued_ms ?? 0) ||
+      (x.key < y.key ? -1 : x.key > y.key ? 1 : 0),
+  );
+
+  const counts = { verified: 0, impostor: 0, revoked: 0, unverified: 0 };
+  for (const a of alerts) counts[a.verdict.status] += 1;
+  return { trust, alerts, counts, head: trust.head };
+}
+
+/** Canonical text of a board's verdicts: one line per alert, sorted by key. */
+function canonicalVerdicts(board) {
+  return board.alerts
+    .map((a) => `${lc(a.key)}:${a.verdict.status}:${a.cosigners.length}`)
+    .sort()
+    .join("\n");
+}
+
+/** SHA-256 hex of the canonical verdicts (Web Crypto: works in browsers and Node 20+). */
+async function boardDigest(board) {
+  const bytes = new TextEncoder().encode(canonicalVerdicts(board));
+  const hash = await globalThis.crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// ---- verifier UI ----
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[c]);
+// Trust pinning (idea credit: Mirrorlease): remember the root you confirmed, warn loudly if it changes.
+const PIN = "countersign.pinnedRoot";
+function pinNote(root) {
+  let saved = null;
+  try { saved = localStorage.getItem(PIN); } catch {}
+  if (!saved) {
+    try { localStorage.setItem(PIN, root.toLowerCase()); } catch {}
+    return `<p>Pinned this root in your browser. If a later copy of this page shows a different one, you will be warned.</p>`;
+  }
+  if (saved !== root.toLowerCase()) {
+    return `<p class="impostor"><b>Warning:</b> you previously pinned root <span class="mono">${saved}</span>. This page now uses <span class="mono">${esc(root)}</span>. Only continue if you got the new root from a channel you trust. <button type="button" id="repin">Pin the new root</button></p>`;
+  }
+  return "<p>Root matches the one you pinned earlier.</p>";
+}
+async function run() {
+  const out = document.getElementById("out");
+  const url = document.getElementById("rpc").value.trim();
+  const root = document.getElementById("root").value.trim();
+  out.innerHTML = "<p>Reading Arkiv…</p>";
+  try {
+    if (!/^0x[0-9a-fA-F]{40}$/.test(root)) throw new Error("Root must be a 0x address");
+    const chain = await rpc(url, "eth_chainId", []);
+    const snap = await loadSnapshot(url, root);
+    const board = judgeBoard(snap, root);
+    const digest = await boardDigest(board);
+    const rows = board.alerts.map((a) => `<tr><td class="s ${a.verdict.status}">${a.verdict.status}</td><td>${esc(a.payload?.title)}<br><span class="mono">${esc(a.attrs.target)}</span></td><td class="mono">${esc(a.creator)}</td><td>${esc(a.verdict.reason)}<br>${a.cosigners.length} sealed countersign(s)</td></tr>`).join("");
+    const seals = [...board.trust.signers].map(([addr, s]) => `<tr><td class="s ${s.state === "active" ? "verified" : s.state === "revoked" ? "revoked" : "unverified"}">${s.state}</td><td>${esc(s.label)}</td><td class="mono">${addr}</td></tr>`).join("");
+    out.innerHTML = `
+      <div class="box">${pinNote(root)}</div>
+      <div class="box"><b>Chain</b> ${parseInt(chain, 16)} · <b>block</b> ${board.head} · <b>verdicts</b> ${JSON.stringify(board.counts)}
+      <div class="mono" style="margin-top:6px">digest ${digest}</div>
+      <p style="margin:6px 0 0">Compare this digest with the board's at the same block: identical means an independent reader reached identical verdicts.</p></div>
+      <div class="box scroll"><b>Seals granted by the root</b><table><tr><th>state</th><th>label</th><th>signer ($creator of its alerts)</th></tr>${seals}</table></div>
+      <div class="box scroll"><b>Alerts</b><table><tr><th>verdict</th><th>alert</th><th>$creator</th><th>why</th></tr>${rows}</table></div>
+      <div class="box"><b>Exact queries sent (arkiv_query)</b><pre>${esc(Object.entries(snap.queries).map(([k, q]) => "# " + k + "\n" + q).join("\n\n"))}</pre></div>`;
+  } catch (err) {
+    out.innerHTML = `<div class="box"><b class="impostor">Could not verify:</b> ${esc(err.message)}</div>`;
+  }
+}
+document.getElementById("go").addEventListener("click", run);
+document.addEventListener("click", (e) => {
+  if (e.target.id === "repin") { try { localStorage.setItem(PIN, document.getElementById("root").value.trim().toLowerCase()); } catch {} run(); }
+});
+run();
+</script>
+</body>
+</html>

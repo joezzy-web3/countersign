@@ -1,0 +1,264 @@
+{
+ "recordedAt": "2026-10-19T18:04:27.458Z",
+ "rpc": "https://rpc.tiramisu.db-chain.testnet.arkiv.network",
+ "root": "0xa35b4CF284cf5FF87912a5Eeb533CB3bF52778C7",
+ "head": 791650,
+ "digest": "f32a89ef436046d691084959eb00dce9c07e7f7028ca38ab23e64d012215242e",
+ "snapshot": {
+  "head": 791650,
+  "grants": [
+   {
+    "key": "0x7ff6792f88bb621e29ecfc44f99abbdfcd6da28be333ddd47fb88dba25ffc1de",
+    "creator": "0xa35b4cf284cf5ff87912a5eeb533cb3bf52778c7",
+    "owner": "0xa35b4cf284cf5ff87912a5eeb533cb3bf52778c7",
+    "createdAt": 791609,
+    "expiresAt": 2087609,
+    "flags": {
+     "readonly": true,
+     "permissionlessExtension": false
+    },
+    "contentType": "application/json",
+    "attrs": {
+     "app": "countersign",
+     "granted_ms": 1792432978824,
+     "label": "relay-guild",
+     "role": "issuer",
+     "signer": "0xbddf4a21e147ab02b0fa7fe553cc5f72fe6e7a1d",
+     "type": "grant"
+    },
+    "payload": {
+     "label": "relay-guild",
+     "note": "Bridge operators' guild (synthetic demo org)"
+    }
+   },
+   {
+    "key": "0x6594ab874bb82fcfb4b9449241e874a5156d93599180dcb3e26d9b3cb5019f5b",
+    "creator": "0xa35b4cf284cf5ff87912a5eeb533cb3bf52778c7",
+    "owner": "0xa35b4cf284cf5ff87912a5eeb533cb3bf52778c7",
+    "createdAt": 791609,
+    "expiresAt": 2087609,
+    "flags": {
+     "readonly": true,
+     "permissionlessExtension": false
+    },
+    "contentType": "application/json",
+    "attrs": {
+     "app": "countersign",
+     "granted_ms": 1792432978823,
+     "label": "tiramisu-sentinel",
+     "role": "issuer",
+     "signer": "0xc5b115b49f1f5690862c65a686eac462ee5b7c9c",
+     "type": "grant"
+    },
+    "payload": {
+     "label": "tiramisu-sentinel",
+     "note": "Security research desk (synthetic demo org)"
+    }
+   },
+   {
+    "key": "0x137e30e3151e1d2e994bb06811caffd552e8328f4c4de95a8ca150a9fabac10f",
+    "creator": "0xa35b4cf284cf5ff87912a5eeb533cb3bf52778c7",
+    "owner": "0xa35b4cf284cf5ff87912a5eeb533cb3bf52778c7",
+    "createdAt": 791609,
+    "expiresAt": 2087609,
+    "flags": {
+     "readonly": true,
+     "permissionlessExtension": false
+    },
+    "contentType": "application/json",
+    "attrs": {
+     "app": "countersign",
+     "granted_ms": 1792432978823,
+     "label": "watchtower-dao",
+     "role": "issuer",
+     "signer": "0x001f7b52b26e563b0c3a4d909fff7d8c6b6aa698",
+     "type": "grant"
+    },
+    "payload": {
+     "label": "watchtower-dao",
+     "note": "Community scam watch (synthetic demo org)"
+    }
+   }
+  ],
+  "revokes": [],
+  "alerts": [
+   {
+    "key": "0x05194cd557ce54f34eae0765c34a4dc325e96fdad1256d9577a75d120e6c05cb",
+    "creator": "0xd5dae49f8f9f78fb0465afc4b4207c67dba3ac97",
+    "owner": "0xd5dae49f8f9f78fb0465afc4b4207c67dba3ac97",
+    "createdAt": 791625,
+    "expiresAt": 1094035,
+    "flags": {
+     "readonly": true,
+     "permissionlessExtension": true
+    },
+    "contentType": "application/json",
+    "attrs": {
+     "app": "countersign",
+     "claims": "tiramisu-sentinel",
+     "issued_ms": 1792433010663,
+     "kind": "advisory",
+     "severity": 5,
+     "target": "tiramisu-migrate.example",
+     "type": "alert"
+    },
+    "payload": {
+     "title": "URGENT: migrate your tokens now",
+     "summary": "Official notice: all holders must migrate before Friday at the link above.",
+     "evidence": [
+      "Signed: Tiramisu Sentinel security team"
+     ]
+    }
+   },
+   {
+    "key": "0x50d1542ce7914cca0863aab8d21db65139b7f93b4af3255cd1d624562aea67c0",
+    "creator": "0xbddf4a21e147ab02b0fa7fe553cc5f72fe6e7a1d",
+    "owner": "0xbddf4a21e147ab02b0fa7fe553cc5f72fe6e7a1d",
+    "createdAt": 791621,
+    "expiresAt": 1094021,
+    "flags": {
+     "readonly": true,
+     "permissionlessExtension": true
+    },
+    "contentType": "application/json",
+    "attrs": {
+     "app": "countersign",
+     "claims": "relay-guild",
+     "issued_ms": 1792433003739,
+     "kind": "advisory",
+     "severity": 3,
+     "target": "relay-guild-bridge.example",
+     "type": "alert"
+    },
+    "payload": {
+     "title": "Bridge maintenance window",
+     "summary": "Deposits paused for 2 hours. (This signer's key is later revoked in the demo.)",
+     "evidence": []
+    }
+   },
+   {
+    "key": "0x7ea0c8121d6ae443da7fa183b646e0caeffef7a362dc89f79fb82ee1bb250e4b",
+    "creator": "0x001f7b52b26e563b0c3a4d909fff7d8c6b6aa698",
+    "owner": "0x001f7b52b26e563b0c3a4d909fff7d8c6b6aa698",
+    "createdAt": 791615,
+    "expiresAt": 1094032,
+    "flags": {
+     "readonly": true,
+     "permissionlessExtension": true
+    },
+    "contentType": "application/json",
+    "attrs": {
+     "app": "countersign",
+     "claims": "watchtower-dao",
+     "issued_ms": 1792432992341,
+     "kind": "phishing",
+     "severity": 4,
+     "target": "arkiv-hub-support.example",
+     "type": "alert"
+    },
+    "payload": {
+     "title": "Fake support desk asks for seed phrases",
+     "summary": "Impersonates faucet support in DMs and links to a form that collects recovery phrases.",
+     "evidence": [
+      "Real support never asks for a seed phrase",
+      "Form posts to a third-party endpoint"
+     ]
+    }
+   },
+   {
+    "key": "0x32edbfeffd72b7561f921666b262cf958e13c1cf86978e5b5d86c007b55a37f9",
+    "creator": "0xc5b115b49f1f5690862c65a686eac462ee5b7c9c",
+    "owner": "0xc5b115b49f1f5690862c65a686eac462ee5b7c9c",
+    "createdAt": 791613,
+    "expiresAt": 1094028,
+    "flags": {
+     "readonly": true,
+     "permissionlessExtension": true
+    },
+    "contentType": "application/json",
+    "attrs": {
+     "app": "countersign",
+     "claims": "tiramisu-sentinel",
+     "issued_ms": 1792432988647,
+     "kind": "drainer",
+     "severity": 5,
+     "target": "claim-tiramisu-drop.example",
+     "type": "alert"
+    },
+    "payload": {
+     "title": "Fake airdrop claim page drains wallets",
+     "summary": "The page asks for a 'claim' signature that is actually an unlimited token approval.",
+     "evidence": [
+      "Approval spender is an unverified contract",
+      "Domain registered 2 days ago"
+     ]
+    }
+   }
+  ],
+  "cosigns": [
+   {
+    "key": "0x7197efe28412f400ff3a3bdd51882fda6f1b24df3e3bdc890351451c1cad96f8",
+    "creator": "0xd5dae49f8f9f78fb0465afc4b4207c67dba3ac97",
+    "owner": "0xd5dae49f8f9f78fb0465afc4b4207c67dba3ac97",
+    "createdAt": 791635,
+    "expiresAt": 1094035,
+    "flags": {
+     "readonly": true,
+     "permissionlessExtension": false
+    },
+    "contentType": "application/json",
+    "attrs": {
+     "alert": "0x05194cd557ce54f34eae0765c34a4dc325e96fdad1256d9577a75d120e6c05cb",
+     "app": "countersign",
+     "cosigned_ms": 1792433032409,
+     "type": "cosign"
+    },
+    "payload": {
+     "note": ""
+    }
+   },
+   {
+    "key": "0x3f991b32f4af76e8ed9ca8b78abaae77208aa6ee381c9942c7d5a3803ac9aa41",
+    "creator": "0xc5b115b49f1f5690862c65a686eac462ee5b7c9c",
+    "owner": "0xc5b115b49f1f5690862c65a686eac462ee5b7c9c",
+    "createdAt": 791632,
+    "expiresAt": 1094032,
+    "flags": {
+     "readonly": true,
+     "permissionlessExtension": false
+    },
+    "contentType": "application/json",
+    "attrs": {
+     "alert": "0x7ea0c8121d6ae443da7fa183b646e0caeffef7a362dc89f79fb82ee1bb250e4b",
+     "app": "countersign",
+     "cosigned_ms": 1792433025922,
+     "type": "cosign"
+    },
+    "payload": {
+     "note": ""
+    }
+   },
+   {
+    "key": "0xa7340c9830a40a9fb9893d057c59ce2b97ba7d6ebc0232ec9326055114ef40c5",
+    "creator": "0x001f7b52b26e563b0c3a4d909fff7d8c6b6aa698",
+    "owner": "0x001f7b52b26e563b0c3a4d909fff7d8c6b6aa698",
+    "createdAt": 791628,
+    "expiresAt": 1094028,
+    "flags": {
+     "readonly": true,
+     "permissionlessExtension": false
+    },
+    "contentType": "application/json",
+    "attrs": {
+     "alert": "0x32edbfeffd72b7561f921666b262cf958e13c1cf86978e5b5d86c007b55a37f9",
+     "app": "countersign",
+     "cosigned_ms": 1792433019297,
+     "type": "cosign"
+    },
+    "payload": {
+     "note": ""
+    }
+   }
+  ]
+ }
+}
