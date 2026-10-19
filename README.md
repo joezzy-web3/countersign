@@ -26,7 +26,7 @@ Anyone can copy a security team's name, logo and wording. Nobody can copy the wa
 
 - **Live app:** https://countersign-xyz.netlify.app (opens on a recorded Tiramisu scenario, then switches to the live chain)
 - **Standalone verifier:** https://countersign-xyz.netlify.app/verify.html (one file, zero dependencies)
-- **Demo video (under 3 min):** `<link>`
+- **Demo video (under 3 min):** YOUR_LINK
 - **Tracks:** Security, Censorship Resistance
 - **Builder:** [@joezzyweb3](https://x.com/joezzyweb3) · [github.com/joezzy-web3](https://github.com/joezzy-web3)
 - **Network:** Arkiv Tiramisu testnet, chain `7738577`. Synthetic demo data only.
