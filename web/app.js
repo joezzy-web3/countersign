@@ -3,6 +3,7 @@ import { CONFIG } from "./core/config.js";
 import { Q, loadSnapshot, queryAll } from "./core/rpc.js";
 import { STATUS, boardDigest, judgeBoard } from "./core/verdict.js";
 import { checkTarget } from "./core/check.js";
+import { scanMessage } from "./core/scan.js";
 import { trustPath } from "./core/path.js";
 
 const $ = (id) => document.getElementById(id);
@@ -31,6 +32,8 @@ const state = {
   seal: null, // 3D hero, if WebGL is available
   toneTimer: null,
   lastCheck: "",
+  lastScan: "",
+  checkMode: "message",
   focusKey: null,
   rendered: new Set(),
 };
@@ -285,7 +288,9 @@ async function setSnapshot(snapshot, { announce = true } = {}) {
   const digest = await boardDigest(board);
   $("digest").textContent = digest.slice(0, 32) + "…";
   $("digestHero").textContent = digest.slice(0, 12);
-  if (state.lastCheck) runCheck(state.lastCheck, { quiet: true });
+  if (state.checkMode === "link" && state.lastCheck) runCheck(state.lastCheck, { quiet: true });
+  if (state.checkMode === "message" && state.lastScan) runScan(state.lastScan, { quiet: true });
+  if (state.pendingParam) consumeParam();
   if (snapshot.queries) {
     $("queries").textContent = Object.entries(snapshot.queries)
       .map(([k, q]) => `# ${k}\n${q}`)
@@ -570,6 +575,7 @@ function placeThumb(group, active) {
 function placeThumbs() {
   placeThumb($("tabs"), document.querySelector(".tab.on"));
   placeThumb($("modeSeg"), document.querySelector("#modeSeg button.on"));
+  placeThumb($("checkSeg"), document.querySelector("#checkSeg button.on"));
 }
 window.addEventListener("resize", placeThumbs);
 document.fonts?.ready.then(placeThumbs);
@@ -648,6 +654,146 @@ $("checkForm").addEventListener("submit", (e) => {
   e.preventDefault();
   runCheck($("checkInput").value);
 });
+
+/* ---------- scan a whole message ---------- */
+
+const SAMPLES = [
+  ["Fake refund DM", "Hi, Watchtower DAO here 👋 Refunds for scam victims are open. Connect the affected wallet at https://watchtower-refund.example within 24 hours."],
+  ["“Migrate now” notice", "URGENT from Tiramisu Sentinel: all holders must migrate before Friday at tiramisu-migrate.example or lose access."],
+  ["Real warning, reposted", "⚠️ @tiramisu_sentinel: do NOT sign anything on claim-tiramisu-drop.example. It asks for an unlimited approval."],
+  ["Bridge notice", "Relay Guild: bridge deposits paused while validators rotate keys. Track status at relay-guild-bridge.example"],
+];
+for (const [name, text] of SAMPLES) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = name;
+  b.addEventListener("click", () => {
+    $("scanInput").value = text;
+    runScan(text);
+  });
+  $("scanSamples").append(b);
+}
+
+function setCheckMode(mode) {
+  state.checkMode = mode;
+  $("segMsg").classList.toggle("on", mode === "message");
+  $("segLink").classList.toggle("on", mode === "link");
+  $("segMsg").setAttribute("aria-selected", String(mode === "message"));
+  $("segLink").setAttribute("aria-selected", String(mode === "link"));
+  $("scanForm").hidden = mode !== "message";
+  $("linkPane").hidden = mode !== "link";
+  $("checkResult").hidden = true;
+  placeThumbs();
+}
+$("segMsg").addEventListener("click", () => setCheckMode("message"));
+$("segLink").addEventListener("click", () => setCheckMode("link"));
+
+/** The message with every link, name and tactic marked, coloured by what the chain says. */
+function highlight(text, spans) {
+  let html = "";
+  let at = 0;
+  for (const s of spans) {
+    html += escapeHtml(text.slice(at, s.start));
+    const cls = s.type === "link" ? `m-link ${s.level}` : s.type === "name" ? "m-name" : "m-tactic";
+    const tip = s.type === "tactic" ? ` title="${escapeHtml(s.kind)}"` : "";
+    html += `<mark class="${cls}"${tip}>${escapeHtml(text.slice(s.start, s.end))}</mark>`;
+    at = s.end;
+  }
+  return html + escapeHtml(text.slice(at));
+}
+
+const LINK_STATE = { danger: ["impostor", "Flagged"], caution: ["unverified", "Rumours only"], clear: ["none", "Nothing flagged"] };
+
+function runScan(text, { quiet = false } = {}) {
+  if (!state.board) return;
+  state.lastScan = text;
+  const r = scanMessage(state.board, text);
+  const box = $("checkResult");
+  box.hidden = false;
+  const level = r.level === "empty" ? "caution" : r.level;
+  box.className = `result scan ${level}`;
+  const icon = { danger: "!", caution: "?", clear: "✓" }[level];
+  const rows = [
+    ...r.names.map((n) => {
+      const addr = `${n.address.slice(0, 6)}…${n.address.slice(-4)}`;
+      const [cls, label, why] = n.echoes.length
+        ? ["impostor", "Name copied", "an impostor wallet already posted this under the name"]
+        : n.state === "revoked"
+          ? ["revoked", "Key revoked", `revoked by the root at block ${n.revokedAt}`]
+          : n.backed.length
+            ? ["verified", "Signed this", `sealed alert from ${addr}`]
+            : n.state === "active" && r.links.length
+              ? ["unverified", "Didn't sign this", `the real ${n.label} is ${addr}`]
+              : n.state === "active"
+                ? ["verified", "Sealed signer", addr]
+                : ["unverified", "Seal lapsed", addr];
+      return `<li><span class="chip ${cls}">${label}</span><b>${escapeHtml(n.label)}</b><span class="muted">${escapeHtml(why)}</span></li>`;
+    }),
+    ...r.links.map((l) => {
+      const [cls, label] = LINK_STATE[l.check.level] ?? LINK_STATE.clear;
+      const lead = l.check.matches.find((a) => a.verdict.status === "verified") ?? l.check.matches[0];
+      return `<li><span class="chip ${cls}">${label}</span><b class="mono">${escapeHtml(l.host)}</b><span class="muted">${escapeHtml(lead?.payload?.title ?? "")}</span></li>`;
+    }),
+  ].join("");
+  const kinds = [...new Set(r.tactics.map((t) => t.kind))];
+  box.innerHTML = `
+    <div class="verdict-icon">${icon}</div>
+    <div class="scan-body">
+      <h3>${escapeHtml(r.headline)}</h3>
+      ${r.detail ? `<p>${escapeHtml(r.detail)}</p>` : ""}
+      ${r.spans.length ? `<blockquote class="quoted">${highlight(text.slice(0, 4000), r.spans)}</blockquote>` : ""}
+      ${rows ? `<ul class="findings">${rows}</ul>` : ""}
+      ${kinds.length ? `<div class="tactics mono">${kinds.map((k) => `<span>${escapeHtml(k)}</span>`).join("")}<em>patterns, not proof · the verdict comes from Arkiv</em></div>` : ""}
+    </div>`;
+  if (!quiet) {
+    if (r.level === "danger") state.seal?.stamp();
+    box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+}
+
+$("scanForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  runScan($("scanInput").value);
+});
+$("scanInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) runScan($("scanInput").value);
+});
+
+/* ---------- "Countersign it" bookmarklet: ?check=host or ?scan=text from any page ---------- */
+
+{
+  const origin = location.origin.startsWith("http") ? location.origin : "https://countersign-xyz.netlify.app";
+  const code = `(()=>{const s=String(getSelection()||'').trim().slice(0,1500);const u='${origin}/?'+(s?'scan='+encodeURIComponent(s):'check='+encodeURIComponent(location.hostname))+'#check';window.open(u,'_blank','noopener')})()`;
+  $("bookmarklet").href = `javascript:${encodeURI(code)}`;
+  $("bookmarklet").addEventListener("click", (e) => {
+    e.preventDefault();
+    const span = $("bookmarklet").querySelector("span");
+    span.textContent = "Drag me to your bookmarks bar";
+    $("bookmarklet").classList.add("nudged");
+    setTimeout(() => {
+      span.textContent = "Countersign it";
+      $("bookmarklet").classList.remove("nudged");
+    }, 2200);
+  });
+  const params = new URLSearchParams(location.search);
+  if (params.get("scan") || params.get("check")) state.pendingParam = { scan: params.get("scan"), check: params.get("check") };
+}
+
+function consumeParam() {
+  const p = state.pendingParam;
+  state.pendingParam = null;
+  history.replaceState(null, "", location.pathname + "#check");
+  if (p.scan) {
+    setCheckMode("message");
+    $("scanInput").value = p.scan;
+    runScan(p.scan);
+  } else if (p.check) {
+    setCheckMode("link");
+    $("checkInput").value = p.check;
+    runCheck(p.check);
+  }
+  $("check").scrollIntoView({ behavior: "smooth" });
+}
 
 /* ---------- wiring ---------- */
 

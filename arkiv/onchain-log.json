@@ -108,5 +108,194 @@
     "entityKeys": [
       "0x0930f85c30195276a4c190b4abf55ec07c707cc4aa2d74553a2a86b80d874e14"
     ]
+  },
+  {
+    "at": "2026-10-19T19:41:46.329Z",
+    "what": "regrant: root grants relay-guild a fresh seal",
+    "wallet": "root",
+    "txHash": "0x77c961e8f356b50dbca70a00493c337651a48dacf7eeb8aa6096afcf9058ca14",
+    "entityKeys": [
+      "0xc3903f726468e56b49d7b090815024c6f08480ab4133b76a7766de23857d867b"
+    ]
+  },
+  {
+    "at": "2026-10-19T19:45:16.029Z",
+    "what": "revoke: root revokes relay-guild (0xbddf4a21e147ab02b0fa7fe553cc5f72fe6e7a1d)",
+    "wallet": "root",
+    "txHash": "0x07a20c9395d3ce734d140327cbfe54603dd96cf398b5008812e3721c91240172",
+    "entityKeys": [
+      "0x990bc7bc48cbefeb358bd1f28ccc4527795f48f05f9808ee48c87f57902597b7"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:08:27.056Z",
+    "what": "demo: sentinel posts a new single-seal alert",
+    "wallet": "sentinel",
+    "txHash": "0x09bbe42660caf27ce152c09a10d0c7ff7cc21b6df0a1ecb63f33f2e832f7109c",
+    "entityKeys": [
+      "0x550f5762e93ee8c007654e93ad473d3a3037b4abe4701d7ddb08aa9db053bf3d"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:08:34.625Z",
+    "what": "demo: root re-grants relay-guild",
+    "wallet": "root",
+    "txHash": "0x40f7b9f2e223a46420aab6573e8bfee03ffb343b759a2b25bb851f4b39a5eca0",
+    "entityKeys": [
+      "0x7a7526e00e069a4a56fcc0c27cf6b763539b06bc7a930bd133df3be7250faf72"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:08:41.894Z",
+    "what": "demo: relay-guild posts a notice",
+    "wallet": "compromised",
+    "txHash": "0xb622d1a3bbfed3739778cb7fe4c20412f27a57c95212a6e38fc66d9cfd660f54",
+    "entityKeys": [
+      "0x5db4259ff300cf65cd1853084bd751d6053c3d807319c654cd9b59ae61123026"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:18:33.775Z",
+    "what": "revoke: root revokes relay-guild (0xbddf4a21e147ab02b0fa7fe553cc5f72fe6e7a1d)",
+    "wallet": "root",
+    "txHash": "0x8346f31a1cc656d28717f8ede90091d9bfef2003e6510bfd2fd8da69deeb804c",
+    "entityKeys": [
+      "0x9d8432f68466eea7e3360fd3f1c7d36f1491a5ed63ad45f6329561f5ebcec2da"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:21:20.179Z",
+    "what": "demo: sentinel posts a new single-seal alert",
+    "wallet": "sentinel",
+    "txHash": "0x2c00a9aa721f90c2c497978277184fca029cc9dbcffbfebb8103209736a68d73",
+    "entityKeys": [
+      "0x22b6f2eaf7b6835ca00ec5f8397aae1f6b7cba269f08a074035984fe2c06d7b4"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:21:27.534Z",
+    "what": "demo: root re-grants relay-guild",
+    "wallet": "root",
+    "txHash": "0x1b2f8b5ed7b9bf4d9325a6a70a349928c69d0fcf29710cf5f6432877e390d4c7",
+    "entityKeys": [
+      "0xe7783762f2e5a7a386ae5770c661439b003fd6d00de807dc8bdd4a355c2ab503"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:21:34.605Z",
+    "what": "demo: relay-guild posts a notice",
+    "wallet": "compromised",
+    "txHash": "0x458254bcaa6395fb95df8cc211c167e45173215970873dfe95222e58dc035ca1",
+    "entityKeys": [
+      "0xf993df32eba8e7b5c1afc15b388818a71af8fd57e899f57e5d4dd625179578da"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:24:42.753Z",
+    "what": "demo: root revokes relay-guild",
+    "wallet": "root",
+    "txHash": "0x0e51e574c291ec2028b6bc3afa0bbcb1cb75a3effa4d2b4e2add848657f5a107",
+    "entityKeys": [
+      "0x4b9ea831d0372cf1173f7e3f5f20589f6773eb790afb4cf35f212579bf9dd2c5"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:42:22.316Z",
+    "what": "demo: sentinel posts a new single-seal alert",
+    "wallet": "sentinel",
+    "txHash": "0xf6a89d7f0e0a146c9528d5db6ff60277f15c02ee19ead1fa9ffb0f4a65119caf",
+    "entityKeys": [
+      "0x12e87dc328933ebc6717285a42aa4e85d4e9d3ec57260a568a56db6a5574079e"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:42:26.549Z",
+    "what": "demo: root re-grants relay-guild",
+    "wallet": "root",
+    "txHash": "0x86fd7ad7a41e2d7d663828c7c856aa5ab7ed637e90360da6c429591e07bf83e2",
+    "entityKeys": [
+      "0xeb07004bb46fb3a87fcdf599c6cffa45b4d474df51e3fe397a793876ce84d296"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:42:30.661Z",
+    "what": "demo: relay-guild posts a notice",
+    "wallet": "compromised",
+    "txHash": "0x31485ad59039e1c628f9b4f55bcc3e091bc7c44723e8b7c7dfb41e302035fe79",
+    "entityKeys": [
+      "0x7e711a26dfb1231aad9812506f76f3cd101e69c17ca71eafc7864e0b5dead47f"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:45:39.138Z",
+    "what": "demo: root revokes relay-guild",
+    "wallet": "root",
+    "txHash": "0x08e616c7eddfc60d900bcece15b431846a6b09711de38bad1de1fdb2927370b7",
+    "entityKeys": [
+      "0x1d8c334bd9443610a7ee3b9ad69d5e06247bc0b798129a069064a61ebf0f05aa"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:47:38.035Z",
+    "what": "demo: sentinel posts a new single-seal alert",
+    "wallet": "sentinel",
+    "txHash": "0xb9b49d15e22032a6fc53072e7f636c2087a4f898ac812653f0ed5206656a29fe",
+    "entityKeys": [
+      "0x3ccbe4666bd54840c529463db2d1acdfce4e75d427380cf60a653f19b06c6478"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:47:45.976Z",
+    "what": "demo: root re-grants relay-guild",
+    "wallet": "root",
+    "txHash": "0x85d6284961a98e47323c72ca4f4257ab5725f93fd782c6cb1b5d9b241862ac44",
+    "entityKeys": [
+      "0xf9a6d7a63d737df140862b2e01366463ab418f78387ae0e2eb766b78cf765f33"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:47:53.889Z",
+    "what": "demo: relay-guild posts a notice",
+    "wallet": "compromised",
+    "txHash": "0x2b95477cea79eb635966ab0282a37e2b25ea33499f18fc487ea4c16504718cd8",
+    "entityKeys": [
+      "0x94d5b501286f1be906a1af88b555f67b46da66298cdbcff38c85aa42f452e4be"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:48:37.902Z",
+    "what": "demo: sentinel posts a new single-seal alert",
+    "wallet": "sentinel",
+    "txHash": "0xf93a3867a7382e3e5d54e26f698a7fb0066f7cf7fdc5956257f583cc0ade2355",
+    "entityKeys": [
+      "0x0dfcdb4d6eb94b9d008037915599029cfef42f349ae3abd7f056d5dec1baf34d"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:48:45.784Z",
+    "what": "demo: root re-grants relay-guild",
+    "wallet": "root",
+    "txHash": "0x155f14759da6351b230397396f9dd63b6c25e1d3e4e2bcfa672da42a5c32511d",
+    "entityKeys": [
+      "0xb2f06623a6982a3f1b01ff584e1ff2ce3cde475b0fc59318a4e87c2b8d11dc16"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:48:53.713Z",
+    "what": "demo: relay-guild posts a notice",
+    "wallet": "compromised",
+    "txHash": "0xab9322dc1803665b6d1610ae9e3a63035f9c3fa396b6009e89ef1edaf53468d2",
+    "entityKeys": [
+      "0x86313de60994f4e49cd13cf1430bf3dd4ae6a0ef8f6718b9af5202245103fbab"
+    ]
+  },
+  {
+    "at": "2026-10-19T20:50:01.756Z",
+    "what": "demo: root revokes relay-guild",
+    "wallet": "root",
+    "txHash": "0x52655630ea5d305d88362165f619b85c9ef3db70680dd1f87cd02eed57a15f9f",
+    "entityKeys": [
+      "0xe6160455098a0bf7ba7ee6676f35e5d8298b827dfc53575e1f74b6c67c64c95f"
+    ]
   }
 ]

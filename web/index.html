@@ -13,7 +13,7 @@
 <body>
   <header class="nav">
     <nav class="links" id="navLinks" aria-label="Sections">
-      <a href="#check" data-spy="check"><i>01</i>Check a link</a>
+      <a href="#check" data-spy="check"><i>01</i>Check</a>
       <a href="#board" data-spy="board"><i>02</i>Board</a>
       <a href="#how" data-spy="how"><i>03</i>How it works</a>
       <a href="verify.html" class="ext">Verifier<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 16L16 8M9 8h7v7"/></svg></a>
@@ -58,7 +58,7 @@
           <p>Scam alerts on Arkiv, judged by the wallet that actually signed them and traced to one root seal. Fakes get stamped in front of every reader. A leaked key is revoked once, everywhere.</p>
           <div class="cta">
             <button id="attackBtn" class="btn danger" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/><path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4"/></svg><span>Launch impostor attack</span></button>
-            <a class="btn ghost" href="#check"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L11.6 6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.6-1.6"/></svg><span>Check a link</span><svg class="ic nudge" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></a>
+            <a class="btn ghost" href="#check"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L11.6 6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.6-1.6"/></svg><span>Check a message</span><svg class="ic nudge" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></a>
           </div>
         </div>
       </div>
@@ -74,16 +74,40 @@
 
     <!-- LINK CHECK -->
     <section id="check" class="section">
-      <div class="section-head">
-        <span class="kicker mono"><i>01</i>Check a link</span>
-        <h2>Is this link safe? <span>Ask the chain, not a display name.</span></h2>
+      <div class="section-head row-between">
+        <div>
+          <span class="kicker mono"><i>01</i>Check before you click</span>
+          <h2>Is this legit? <span>Ask the chain, not a display name.</span></h2>
+        </div>
+        <div class="seg check-seg" id="checkSeg" role="tablist" aria-label="What to check">
+          <span class="thumb" aria-hidden="true"></span>
+          <button id="segMsg" class="on" type="button" role="tab" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>A message</button>
+          <button id="segLink" type="button" role="tab" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L11.6 6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.6-1.6"/></svg>A link</button>
+        </div>
       </div>
-      <form id="checkForm" class="checker" autocomplete="off">
-        <input id="checkInput" class="mono" type="text" inputmode="url" placeholder="paste a link or domain, e.g. claim-tiramisu-drop.example" aria-label="Link or domain to check" />
-        <button class="btn" type="submit"><span>Check</span><svg class="ic nudge" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+      <form id="scanForm" class="scanner" autocomplete="off">
+        <textarea id="scanInput" rows="4" spellcheck="false" placeholder="Paste the tweet, DM or Discord announcement that wants you to click. We find every link and every name it claims to speak for, and check them on Arkiv." aria-label="Message to check"></textarea>
+        <div class="scanner-bar">
+          <div id="scanSamples" class="suggest mono"><span>try:</span></div>
+          <button class="btn" type="submit"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><span>Scan message</span></button>
+        </div>
       </form>
-      <div id="checkSuggest" class="suggest mono"></div>
+      <div id="linkPane" hidden>
+        <form id="checkForm" class="checker" autocomplete="off">
+          <input id="checkInput" class="mono" type="text" inputmode="url" placeholder="paste a link or domain, e.g. claim-tiramisu-drop.example" aria-label="Link or domain to check" />
+          <button class="btn" type="submit"><span>Check</span><svg class="ic nudge" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+        </form>
+        <div id="checkSuggest" class="suggest mono"></div>
+      </div>
       <div id="checkResult" class="result" hidden></div>
+      <div class="anywhere">
+        <div class="anywhere-copy">
+          <span class="kicker mono">Anywhere on the web</span>
+          <h3>Check without leaving the page.</h3>
+          <p>Drag this button to your bookmarks bar. On any site, click it to check that site. Highlight a suspicious tweet or DM first, and it scans the message instead.</p>
+        </div>
+        <a id="bookmarklet" class="bookmarklet" href="#" draggable="true" title="Drag me to your bookmarks bar"><img src="seal.svg" alt="" width="18" height="18" /><span>Countersign it</span><svg class="ic grip" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01"/></svg></a>
+      </div>
     </section>
 
     <!-- BOARD -->

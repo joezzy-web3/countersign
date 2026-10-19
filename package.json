@@ -21,7 +21,9 @@
     "dev": "npx --yes serve web -l 5173",
     "friction": "node scripts/friction-table.mjs",
     "proof": "node scripts/proof.mjs",
-    "fresh": "node scripts/fresh.mjs"
+    "fresh": "node scripts/fresh.mjs",
+    "regrant": "node scripts/regrant.mjs",
+    "demo": "node scripts/demo.mjs"
   },
   "dependencies": {
     "@arkiv-network/sdk": "0.8.1",
