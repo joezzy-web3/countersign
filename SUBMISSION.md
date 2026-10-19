@@ -14,7 +14,7 @@ Security warnings travel on trusted accounts, and accounts get taken over. In Ja
 **Challenges I ran into**
 SDK 0.8.1 accepts uppercase attribute names that Tiramisu rejects, so we lowercased the whole schema. Entity events cannot be scoped to one app, so the live board re-reads on every foreign create; we debounced that. There is no server-side ordering, so the feed walks every page at one pinned block and sorts locally. Expiry has no event, so the board re-reads every 60 seconds. Building a verifier with zero dependencies meant writing a raw `arkiv_query` reader that matches the SDK's wire format exactly; tests keep the two in step. Details: arkiv/friction.md.
 
-1. **Live app URL:** https://<site>.netlify.app
+1. **Live app URL:** https://countersign-xyz.netlify.app
 2. **Indian nationality on the team:** No
 3. **Why Arkiv?**
 The product is the question "who signed this, according to the chain". On Postgres or our own API, the author is a column the operator can rewrite, and one takedown removes every warning. On IPFS, a hash proves bytes, not the publisher, and we would need our own signature scheme and index to ask "alerts by these signers, severity ≥ 3"; nothing expires, so impostor spam stays. A subgraph needs our contract and someone's indexer, which becomes the new point to censor. Arkiv gives `$creator` set by the chain and queryable, so trust is one query anyone can run against any node. Per-type expiry cleans up unconfirmed alerts and idle seals by itself. Permissionless extension lets other signers keep a confirmed alert alive without being able to edit it. Kept off Arkiv on purpose: keys, any personal data, large files, UI state, and the verdicts themselves, which every reader recomputes.

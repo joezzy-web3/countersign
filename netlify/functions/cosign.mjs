@@ -21,8 +21,20 @@ export default async (req) => {
   }
   if (!/^0x[0-9a-f]{64}$/.test(alertKey)) return json(400, { error: "alertKey must be a 32-byte hex entity key" });
 
-  const signers = ["KEY_WATCHTOWER", "KEY_SENTINEL"].filter((k) => process.env[k]).map((k) => walletClient(process.env[k], RPC));
-  if (!signers.length) return json(503, { error: "Demo signers not configured on this deployment." });
+  // Build each demo signer separately, so one badly pasted key cannot crash the endpoint.
+  const signers = [];
+  const broken = [];
+  for (const name of ["KEY_WATCHTOWER", "KEY_SENTINEL"]) {
+    if (!process.env[name]) continue;
+    try {
+      signers.push(walletClient(process.env[name], RPC));
+    } catch {
+      broken.push(name);
+    }
+  }
+  if (!signers.length) {
+    return json(503, { error: broken.length ? `Demo signer key(s) malformed in Netlify settings: ${broken.join(", ")}` : "Demo signers not configured on this deployment." });
+  }
 
   try {
     const board = judgeBoard(await loadSnapshot(RPC, CONFIG.root, { headers: apiHeaders() }), CONFIG.root);

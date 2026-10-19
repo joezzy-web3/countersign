@@ -72,5 +72,41 @@
     "entityKeys": [
       "0x7197efe28412f400ff3a3bdd51882fda6f1b24df3e3bdc890351451c1cad96f8"
     ]
+  },
+  {
+    "at": "2026-10-19T19:13:55.166Z",
+    "what": "revoke: root revokes relay-guild (0xbddf4a21e147ab02b0fa7fe553cc5f72fe6e7a1d)",
+    "wallet": "root",
+    "txHash": "0x143466b60dd8e8ea74834fa2280717938e6cc93c9d6ddc753b27f198d6c2e40e",
+    "entityKeys": [
+      "0x8be9b8a3f0e86f66d429502f85f7f547e49b6ff1820e141137228dbba16d0da1"
+    ]
+  },
+  {
+    "at": "2026-10-19T19:16:43.444Z",
+    "what": "revoke: root revokes relay-guild (0xbddf4a21e147ab02b0fa7fe553cc5f72fe6e7a1d)",
+    "wallet": "root",
+    "txHash": "0x9505dfcf89d37f39288f9fa5449e9532912f3425876695d647b4296fe7ca6ab5",
+    "entityKeys": [
+      "0x0c9d63cd2aba36af27ed0478322acfd27de894bf3bb09133cdf0f058f111be60"
+    ]
+  },
+  {
+    "at": "2026-10-19T19:22:07.029Z",
+    "what": "fresh: sentinel posts a new single-seal alert",
+    "wallet": "sentinel",
+    "txHash": "0x7d4753d96ecf360875505e94236854695faaa5244c56de8655a2dae325cf4b07",
+    "entityKeys": [
+      "0xcb53bf53df77397b9499c4f504f5d268719a30ef91d15243c5eebb6d71fa1781"
+    ]
+  },
+  {
+    "at": "2026-10-19T19:23:31.376Z",
+    "what": "revoke: root revokes relay-guild (0xbddf4a21e147ab02b0fa7fe553cc5f72fe6e7a1d)",
+    "wallet": "root",
+    "txHash": "0x65849fb0a9fe2e0cac3235ad3a65eb83a6f11137766e510901e9e55c45c9ab34",
+    "entityKeys": [
+      "0x0930f85c30195276a4c190b4abf55ec07c707cc4aa2d74553a2a86b80d874e14"
+    ]
   }
 ]

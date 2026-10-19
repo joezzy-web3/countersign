@@ -37,7 +37,12 @@ export default async (req) => {
   if (!process.env.KEY_IMPOSTOR) return json(503, { error: "Demo writer not configured on this deployment." });
 
   try {
-    const impostor = walletClient(process.env.KEY_IMPOSTOR, RPC);
+    let impostor;
+    try {
+      impostor = walletClient(process.env.KEY_IMPOSTOR, RPC);
+    } catch {
+      return json(503, { error: "KEY_IMPOSTOR is malformed in Netlify settings." });
+    }
     const me = impostor.account.address.toLowerCase();
     const since = Date.now() - 10 * 60 * 1000;
     // Global, stateless rate limit enforced from chain data.

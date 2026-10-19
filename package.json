@@ -20,7 +20,8 @@
     "build:verifier": "node scripts/build-verifier.mjs",
     "dev": "npx --yes serve web -l 5173",
     "friction": "node scripts/friction-table.mjs",
-    "proof": "node scripts/proof.mjs"
+    "proof": "node scripts/proof.mjs",
+    "fresh": "node scripts/fresh.mjs"
   },
   "dependencies": {
     "@arkiv-network/sdk": "0.8.1",

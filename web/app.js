@@ -31,6 +31,7 @@ const state = {
   seal: null, // 3D hero, if WebGL is available
   toneTimer: null,
   lastCheck: "",
+  focusKey: null,
   rendered: new Set(),
 };
 
@@ -220,7 +221,16 @@ function render() {
     node.querySelector(".lease").title = `Expires at block ${a.expiresAt}. Each countersign renews it for 7 days.`;
 
     const cosignBtn = node.querySelector(".cosignBtn");
-    cosignBtn.hidden = !(state.mode === "live" && st === STATUS.VERIFIED);
+    const demo = [CONFIG.wallets.watchtower, CONFIG.wallets.sentinel].map((x) => x.toLowerCase());
+    const canSign = demo.some((d) => d !== a.creator && !a.cosigners.some((c) => c.address === d));
+    cosignBtn.hidden = !(state.mode === "live" && st === STATUS.VERIFIED && canSign);
+    // 2. "Just landed" badge on anything created in the last ~3 minutes (90 blocks)
+    if (state.mode === "live" && board.head - a.createdAt <= 90) {
+      const nb = document.createElement("span");
+      nb.className = "new-badge mono";
+      nb.textContent = "Just landed";
+      node.querySelector(".meta").prepend(nb);
+    }
     cosignBtn.addEventListener("click", () => countersign(a.key, cosignBtn));
 
     const raw = node.querySelector(".raw");
@@ -249,6 +259,18 @@ function render() {
   }
 
   $("attackBtn").disabled = state.busy;
+  if (state.focusKey) {
+    const el = document.querySelector(`.card[data-key="${state.focusKey}"]`);
+    if (el) {
+      state.focusKey = null;
+      if (state.filter !== "all") document.querySelector('.tab[data-filter="all"]')?.click();
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("spotlight");
+        setTimeout(() => el.classList.remove("spotlight"), 6000);
+      }, 50);
+    }
+  }
   $("attackBtn").title = state.mode === "live" ? "" : "Switches to the live chain first";
 }
 
@@ -507,7 +529,8 @@ async function attack() {
   notice("The impostor is signing an alert in a trusted name…");
   try {
     const r = await post("/api/attack");
-    notice(`Impostor alert landed (tx ${short(r.txHash)}), claiming “${r.claims}”. Watch it get stamped.`, "ok");
+    notice(`Impostor alert sent (tx ${short(r.txHash)}), claiming “${r.claims}”. Taking you to it…`, "ok");
+    state.focusKey = String(r.entityKey).toLowerCase();
     tick(`Impostor ${short(r.impostor)} signed an alert claiming <b>${escapeHtml(r.claims)}</b>`, "impostor");
     scheduleRefresh();
   } catch (err) {
